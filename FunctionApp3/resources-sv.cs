@@ -8,6 +8,7 @@ using System.IO;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Text;
+using System.Collections.Generic;
 
 namespace FunctionApp3
 {
@@ -33,7 +34,7 @@ namespace FunctionApp3
             }
             string token = result.AccessToken;
 
-            // send a get request for resources, with bearer token in header
+            // send a get request for all resources, with bearer token in header
             HttpClient httpClient = new HttpClient();
             string subId = Environment.GetEnvironmentVariable("subIdSV");
             string URL = "https://management.azure.com/subscriptions/" + subId + "/resources?api-version=2017-05-10";
@@ -106,11 +107,88 @@ namespace FunctionApp3
             }
 
             // Upload file with name "date" and content "body"
-            CloudBlockBlob blockBlob = container.GetBlockBlobReference(date);
+            CloudBlockBlob blockBlob = container.GetBlockBlobReference(date + "-AllResources");
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(body)))
             {
                 log.LogInformation("streaming : ");
                 await blockBlob.UploadFromStreamAsync(stream);
+            }
+
+            // send a get request for resources groups, with bearer token in header
+            URL = "https://management.azure.com/subscriptions/" + subId + "/resourceGroups?api-version=2014-04-01";
+            httpClient.DefaultRequestHeaders.Remove("Authorization");
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+            response = await httpClient.GetAsync(URL);
+            responseBody = await response.Content.ReadAsStringAsync();
+
+            // create a List containing name of each resource group
+            List<string> resourceGroupsList = new List<string>();
+            int e;
+            for (int i = 0; i < responseBody.Length - 13; i++)
+            {
+                try
+                {
+                    if (responseBody.Substring(i, 4) == "name") //",\"name\": "
+                    {
+                        s = i + 7;
+                    }
+                    if (responseBody.Substring(i, 8) == "location") //",\"location\": "
+                    {
+                        e = i - 3;
+                        resourceGroupsList.Add(responseBody.Substring(s, e - s));
+                    }
+                }
+                catch (ArgumentOutOfRangeException outOfRange)
+                {
+
+                    Console.WriteLine("Error: {0}", outOfRange.Message);
+                }
+            }
+
+            // output resources with a folder structure, Resource_Groups > resource group name > dated resources file
+            foreach (string resourceGroup in resourceGroupsList)
+            {
+                URL = "https://management.azure.com/subscriptions/" + subId + "/resourceGroups/" + resourceGroup + "/resources?api-version=2017-05-10";
+                httpClient.DefaultRequestHeaders.Remove("Authorization");
+                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                response = await httpClient.GetAsync(URL);
+                responseBody = await response.Content.ReadAsStringAsync();
+                body = "";
+                s = 1;
+                for (int i = 0; i < responseBody.Length - 1; i++)
+                {
+                    try
+                    {
+
+                        if (responseBody.Substring(i, 1) == "[")
+                        {
+                            body += "[\n";
+                            s = i + 1;
+                        }
+                        if (responseBody.Substring(i, 2) == ",{")
+                        {
+                            body += responseBody.Substring(s, i - s) + "\n";
+                            s = i + 1;
+                        }
+                        if (responseBody.Substring(i, 1) == "]")
+                        {
+                            body += responseBody.Substring(s, i - s) + "\n";
+                            body += "]";
+                        }
+                    }
+                    catch (ArgumentOutOfRangeException outOfRange)
+                    {
+
+                        Console.WriteLine("Error: {0}", outOfRange.Message);
+                    }
+                }
+                // Upload file with name "date" and content "body"
+                blockBlob = container.GetBlockBlobReference("ResourceGroups/" + resourceGroup + "/" + date + "-" + resourceGroup);
+                using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(body)))
+                {
+                    log.LogInformation("streaming : ");
+                    await blockBlob.UploadFromStreamAsync(stream);
+                }
             }
         }
     }
