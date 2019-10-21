@@ -46,7 +46,8 @@ namespace FunctionApp3
             string dateFull = DateTime.Now.ToString();
             // reformat DateTime, as / and : not usable in filenames
             // include 'dateFull.Substring(17, 2)' to specify seconds (use 11, 2 for hours and 14, 2 for mins) when run. So that name is unique when running frequently for testing
-            string date = dateFull.Substring(0, 2) + "-" + dateFull.Substring(3, 2) + "-" + dateFull.Substring(6, 4);
+            // formated as dd/mm/yyyy
+            string date = dateFull.Substring(3, 2) + "-" + dateFull.Substring(0, 2) + "-" + dateFull.Substring(6, 4);
             string body = "";
             int s = 1;
             for (int i = 0; i < responseBody.Length - 1; i++)
