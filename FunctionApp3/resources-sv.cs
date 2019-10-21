@@ -89,7 +89,7 @@ namespace FunctionApp3
             //Upload a file to Azure blob
             string storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=" + Environment.GetEnvironmentVariable("storageName") + ";AccountKey=" + Environment.GetEnvironmentVariable("storageKey") + ";EndpointSuffix=core.windows.net";
             string name = "resources-sv";
-            //string body = "test info";
+
             // Retrieve storage account from connection string.
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
 
@@ -128,11 +128,11 @@ namespace FunctionApp3
             {
                 try
                 {
-                    if (responseBody.Substring(i, 4) == "name") //",\"name\": "
+                    if (responseBody.Substring(i, 6) == "name\":") //",\"name\": "
                     {
                         s = i + 7;
                     }
-                    if (responseBody.Substring(i, 8) == "location") //",\"location\": "
+                    if (responseBody.Substring(i, 10) == "location\":") //",\"location\": "
                     {
                         e = i - 3;
                         resourceGroupsList.Add(responseBody.Substring(s, e - s));
