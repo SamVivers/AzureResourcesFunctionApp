@@ -13,7 +13,7 @@ namespace FunctionApp3
 {
     public static class Function1
     {
-        [FunctionName("Function1")]
+        [FunctionName("resources-sv")]
         public static async Task RunAsync([TimerTrigger("0 0 4 * * *")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
