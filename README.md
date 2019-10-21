@@ -10,3 +10,6 @@ Use:
 diff --unified file1.txt file2.txt
 ```
 to compare, lines prefixed with - indicate deletions, + for additions
+
+### Environment Variables
+define in the function app's application settings, use @Microsoft.KeyVault(SecretUri=SECRET_IDENTIFIER) for the value to call to secrets stored in Azure key vault.
