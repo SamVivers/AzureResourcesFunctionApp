@@ -3,7 +3,6 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.WindowsAzure.Storage.Blob;
 
 public class Helper
@@ -47,7 +46,7 @@ public class Helper
             catch (ArgumentOutOfRangeException outOfRange)
             {
 
-                Console.WriteLine("Error: {0}", outOfRange.Message);
+                Console.WriteLine("Error: {0} format", outOfRange.Message);
             }
         }
         return body;

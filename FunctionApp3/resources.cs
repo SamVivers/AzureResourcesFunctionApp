@@ -16,7 +16,7 @@ namespace FunctionApp3
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-        // environment variables
+        // variables
             string tenantId = Environment.GetEnvironmentVariable("tenantId");
             string clientId = Environment.GetEnvironmentVariable("appIdSV");
             string clientKey = Environment.GetEnvironmentVariable("appKeySV");
@@ -65,7 +65,7 @@ namespace FunctionApp3
             List<string> resourceGroupsList = new List<string>();
             int start = 0;
             int end = 0;
-            for (int i = 0; i < responseBodyRG.Length - 13; i++)
+            for (int i = 0; i < responseBodyRG.Length - 12; i++)
             {
                 try
                 {
@@ -82,7 +82,7 @@ namespace FunctionApp3
                 catch (ArgumentOutOfRangeException outOfRange)
                 {
 
-                    Console.WriteLine("Error: {0}", outOfRange.Message);
+                    log.LogInformation("Error: {0} RG", outOfRange.Message);
                 }
             }
 
