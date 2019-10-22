@@ -128,11 +128,11 @@ namespace FunctionApp3
             {
                 try
                 {
-                    if (responseBody.Substring(i, 6) == "name\":") //",\"name\": "
+                    if (responseBody.Substring(i, 6) == "name\":")
                     {
                         s = i + 7;
                     }
-                    if (responseBody.Substring(i, 10) == "location\":") //",\"location\": "
+                    if (responseBody.Substring(i, 10) == "location\":")
                     {
                         e = i - 3;
                         resourceGroupsList.Add(responseBody.Substring(s, e - s));
@@ -182,7 +182,6 @@ namespace FunctionApp3
                         Console.WriteLine("Error: {0}", outOfRange.Message);
                     }
                 }
-                // Upload file with name "date" and content "body"
                 blockBlob = container.GetBlockBlobReference("ResourceGroups/" + resourceGroup + "/" + date + "-" + resourceGroup);
                 using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(body)))
                 {
