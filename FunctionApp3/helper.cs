@@ -65,6 +65,7 @@ public class Helper
     {
         // Create container and upload file, include / in fileName to create folders
         CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+        await container.CreateIfNotExistsAsync();
         CloudBlockBlob blockBlob = container.GetBlockBlobReference(fileName);
         using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(body)))
         {
