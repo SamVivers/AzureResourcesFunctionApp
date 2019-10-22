@@ -10,7 +10,7 @@ public class Helper
 {
     public static async Task<string> GetInfoAsync(string URL, string token)
     {
-        // send a get request for all resources, with bearer token in header
+        // send a get request for resources, with bearer token in header
         HttpClient httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Remove("Authorization");
         httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
@@ -20,8 +20,7 @@ public class Helper
 
     public static string FormatResponse(string responseBody)
     {
-
-        // request responce (parsed to string) is formated (one line per resource) and outputed to a file
+        // request response (json parsed to string) is formated one line per resource
         string body = "";
         int start = 1;
         for (int i = 0; i<responseBody.Length - 1; i++)
@@ -64,7 +63,7 @@ public class Helper
     }
     public static async Task OutputCloudAsync(CloudBlobClient blobClient, string containerName, string fileName, string body)
     {
-        // Create container and upload file
+        // Create container and upload file, include / in fileName to create folders
         CloudBlobContainer container = blobClient.GetContainerReference(containerName);
         CloudBlockBlob blockBlob = container.GetBlockBlobReference(fileName);
         using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(body)))

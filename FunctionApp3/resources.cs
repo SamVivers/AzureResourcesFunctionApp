@@ -50,7 +50,7 @@ namespace FunctionApp3
             string token = result.AccessToken;
 
 
-            // create and upload All Resources file
+        // create and upload All Resources file
             string responseBody = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resources?api-version=2017-05-10", token);
 
             string body = Helper.FormatResponse(responseBody);
