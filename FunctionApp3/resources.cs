@@ -63,20 +63,20 @@ namespace FunctionApp3
 
             // create a List containing name of each resource group
             List<string> resourceGroupsList = new List<string>();
-            int s = 0;
-            int e = 0;
+            int start = 0;
+            int end = 0;
             for (int i = 0; i < responseBodyRG.Length - 13; i++)
             {
                 try
                 {
                     if (responseBodyRG.Substring(i, 6) == "name\":")
                     {
-                        s = i + 7;
+                        start = i + 7;
                     }
                     if (responseBodyRG.Substring(i, 10) == "location\":")
                     {
-                        e = i - 3;
-                        resourceGroupsList.Add(responseBodyRG.Substring(s, e - s));
+                        end = i - 3;
+                        resourceGroupsList.Add(responseBodyRG.Substring(start, end - start));
                     }
                 }
                 catch (ArgumentOutOfRangeException outOfRange)

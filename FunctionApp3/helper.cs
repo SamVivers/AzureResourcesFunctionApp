@@ -23,7 +23,7 @@ public class Helper
 
         // request responce (parsed to string) is formated (one line per resource) and outputed to a file
         string body = "";
-        int s = 1;
+        int start = 1;
         for (int i = 0; i<responseBody.Length - 1; i++)
         {
             try
@@ -32,16 +32,16 @@ public class Helper
                 if (responseBody.Substring(i, 1) == "[")
                 {
                     body += "[\n";
-                    s = i + 1;
+                    start = i + 1;
                 }
                 if (responseBody.Substring(i, 2) == ",{")
                 {
-                    body += responseBody.Substring(s, i - s) + "\n";
-                    s = i + 1;
+                    body += responseBody.Substring(start, i - start) + "\n";
+                    start = i + 1;
                 }
                 if (responseBody.Substring(i, 1) == "]")
                 {
-                    body += responseBody.Substring(s, i - s) + "\n";
+                    body += responseBody.Substring(start, i - start) + "\n";
                     body += "]";
                 }
             }
