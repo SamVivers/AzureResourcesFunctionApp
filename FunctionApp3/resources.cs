@@ -17,7 +17,7 @@ namespace FunctionApp3
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
         // variables
-            string tenantId = Environment.GetEnvironmentVariable("tenantId");
+            string tenantId = Environment.GetEnvironmentVariable("tenantIdCANCOM");
             string clientId = Environment.GetEnvironmentVariable("appIdSV");
             string clientKey = Environment.GetEnvironmentVariable("appKeySV");
             string subId = Environment.GetEnvironmentVariable("subIdSV");
@@ -37,12 +37,11 @@ namespace FunctionApp3
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
 
-        // aquire bearer token, variable given when creating service principal. Only needs to run once (token is valid for 1 year by default) but currently runs everytime
+        // aquire bearer token, variable given when creating service principal. Only needs to run once (token is valid for 1 year by default) but currently runs everytime function is triggered
             string authContextURL = "https://login.windows.net/" + tenantId;
             AuthenticationContext authenticationContext = new AuthenticationContext(authContextURL);
             var credential = new ClientCredential(clientId, clientKey);
-            var result = await authenticationContext
-            .AcquireTokenAsync("https://management.azure.com/", credential);
+            var result = await authenticationContext.AcquireTokenAsync("https://management.azure.com/", credential);
             if (result == null)
             {
                 throw new InvalidOperationException("Failed to obtain the token");
@@ -58,7 +57,7 @@ namespace FunctionApp3
             await Helper.OutputCloudAsync(blobClient, containerName, date + "-AllResources", body);
 
 
-        // create and upload Resources by resource group files
+        // create and upload Resources files by resource group
             string responseBodyRG = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups?api-version=2014-04-01", token);
 
             // create a List containing name of each resource group
@@ -81,15 +80,14 @@ namespace FunctionApp3
                 }
                 catch (ArgumentOutOfRangeException outOfRange)
                 {
-
                     log.LogInformation("Error: {0} RG", outOfRange.Message);
                 }
             }
 
-            // output resources with a folder structure, Resource_Groups > resource group name > dated resources file
+            // output resources with a folder structure, ResourceGroups > resource group name > dated resources file
             foreach (string resourceGroup in resourceGroupsList)
             {
-                string responseBodyRGResources = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + Environment.GetEnvironmentVariable("subIdSV") + "/resourceGroups/" + resourceGroup + "/resources?api-version=2017-05-10", token);
+                string responseBodyRGResources = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups/" + resourceGroup + "/resources?api-version=2017-05-10", token);
                 
                 string bodyRG = Helper.FormatResponse(responseBodyRGResources);
 

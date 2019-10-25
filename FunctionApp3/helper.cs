@@ -21,7 +21,7 @@ public class Helper
     {
         // request response (json parsed to string) is formated one line per resource
         string body = "";
-        int start = 1;
+        int start = 0;
         for (int i = 0; i<responseBody.Length - 1; i++)
         {
             try
