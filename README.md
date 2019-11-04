@@ -3,6 +3,8 @@ Timer triggered function app to get a list of all resources in an Azure subscrip
 
 When triggered a text file is outputed to an Azure blob storage account, with one resource per line for ease of comparison.
 
+Creates a file with all resources listed and a also files for resources by resource group.
+
 The intent is to create a log of resources so if issues occur can easily review changes made to Azure resources to help diagnose.
 
 Use:

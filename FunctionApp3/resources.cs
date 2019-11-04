@@ -52,7 +52,7 @@ namespace FunctionApp3
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
 
-            // aquire bearer token, variable given when creating service principal. Only needs to run once (token is valid for 1 year by default) but currently runs everytime function is triggered
+        // aquire bearer token, variable given when creating service principal. Only needs to run once (token is valid for 1 year by default) but currently runs everytime function is triggered
             string authContextURL = "https://login.windows.net/" + tenantId;
             AuthenticationContext authenticationContext = new AuthenticationContext(authContextURL);
             var credential = new ClientCredential(clientId, clientKey);
@@ -63,8 +63,7 @@ namespace FunctionApp3
             }
             string token = result.AccessToken;
 
-
-            // create and upload All Resources file
+        // create and upload All Resources file
             string responseBody = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resources?api-version=2017-05-10", token);
 
             string body = Helper.FormatResponse(responseBody);
@@ -72,7 +71,7 @@ namespace FunctionApp3
             await Helper.OutputCloudAsync(blobClient, containerName, dateFormatted + "-AllResources", body);
 
 
-            // create and upload Resources files by resource group
+        // create and upload Resources files by resource group
             string responseBodyRG = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups?api-version=2014-04-01", token);
 
             // create a List containing name of each resource group
