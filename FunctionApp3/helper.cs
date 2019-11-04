@@ -52,10 +52,10 @@ public class Helper
         return body;
     }
 
-    public static void OutputLocal(string body, string date)
+    public static void OutputLocal(string body, string dateFormatted)
     {
         string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, $"Resources{date}.txt")))
+        using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, $"Resources{dateFormatted}.txt")))
         {
             outputFile.Write(body);
         }

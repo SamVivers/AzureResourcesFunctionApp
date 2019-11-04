@@ -29,10 +29,25 @@ namespace FunctionApp3
             // include 'dateFull.Substring(17, 2)' to specify seconds (use 11, 2 for hours and 14, 2 for mins) so that fileName is unique when running frequently for testing
             // formated as dd-mm-yyyy
             string dateFull = DateTime.Now.ToString();
-            string date = dateFull.Substring(3, 2) + "-" + dateFull.Substring(0, 2) + "-" + dateFull.Substring(6, 4);
+            string dateFormatted = "";
+            if (dateFull.Substring(1, 1) == "/" && dateFull.Substring(3, 1) == "/")
+            {
+                dateFormatted = dateFull.Substring(2, 1) + "-" + dateFull.Substring(0, 1) + "-" + dateFull.Substring(4, 4);
+            }
+            if (dateFull.Substring(1, 1) == "/" && dateFull.Substring(4, 1) == "/")
+            {
+                dateFormatted = dateFull.Substring(2, 2) + "-" + dateFull.Substring(0, 1) + "-" + dateFull.Substring(5, 4);
+            }
+            if (dateFull.Substring(2, 1) == "/" && dateFull.Substring(4, 1) == "/")
+            {
+                dateFormatted = dateFull.Substring(3, 1) + "-" + dateFull.Substring(0, 2) + "-" + dateFull.Substring(5, 4);
+            }
+            if (dateFull.Substring(2, 1) == "/" && dateFull.Substring(5, 1) == "/")
+            {
+                dateFormatted = dateFull.Substring(3, 2) + "-" + dateFull.Substring(0, 2) + "-" + dateFull.Substring(6, 4);
+            }
 
-
-        // define Azure Stroage Account
+            // define Azure Stroage Account
             string storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=" + storageName + ";AccountKey=" + storageKey + ";EndpointSuffix=core.windows.net";
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
@@ -48,13 +63,12 @@ namespace FunctionApp3
             }
             string token = result.AccessToken;
 
-
         // create and upload All Resources file
             string responseBody = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resources?api-version=2017-05-10", token);
 
             string body = Helper.FormatResponse(responseBody);
 
-            await Helper.OutputCloudAsync(blobClient, containerName, date + "-AllResources", body);
+            await Helper.OutputCloudAsync(blobClient, containerName, dateFormatted + "-AllResources", body);
 
 
         // create and upload Resources files by resource group
@@ -88,10 +102,10 @@ namespace FunctionApp3
             foreach (string resourceGroup in resourceGroupsList)
             {
                 string responseBodyRGResources = await Helper.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups/" + resourceGroup + "/resources?api-version=2017-05-10", token);
-                
+
                 string bodyRG = Helper.FormatResponse(responseBodyRGResources);
 
-                await Helper.OutputCloudAsync(blobClient, containerName, "ResourceGroups/" + resourceGroup + "/" + date + "-" + resourceGroup, bodyRG);
+                await Helper.OutputCloudAsync(blobClient, containerName, "ResourceGroups/" + resourceGroup + "/" + dateFormatted + "-" + resourceGroup, bodyRG);
             }
         }
     }
