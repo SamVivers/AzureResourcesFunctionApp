@@ -26,8 +26,9 @@ namespace FunctionApp3
             string containerName = "resources-sv";
 
         // reformat DateTime, as / and : not usable in filenames
-            // include 'dateFull.Substring(17, 2)' to specify seconds (use 11, 2 for hours and 14, 2 for mins) so that fileName is unique when running frequently for testing
-            // formated as dd-mm-yyyy
+            // include 'dateFull.Substring(17, 2)' to specify seconds (use 11, 2 for hours and 14, 2 for mins) so that fileName is unique when running frequently for testing,
+            // above is true only after the 10th of Oct, Nov, Dec; indices vary as single digit days/months are formatted as 'n' not '0x' in Azure Function Apps
+            // formated as dd-mm-yyyy in Azure Function App, the DateTime struct returns differently formatted result in Visual Studio, Azure CLI and Azure Function Apps :@
             string dateFull = DateTime.Now.ToString();
             string dateFormatted = "";
             if (dateFull.Substring(1, 1) == "/" && dateFull.Substring(3, 1) == "/")
@@ -47,7 +48,7 @@ namespace FunctionApp3
                 dateFormatted = dateFull.Substring(3, 2) + "-" + dateFull.Substring(0, 2) + "-" + dateFull.Substring(6, 4);
             }
 
-            // define Azure Stroage Account
+        // define Azure Stroage Account
             string storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=" + storageName + ";AccountKey=" + storageKey + ";EndpointSuffix=core.windows.net";
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(storageConnectionString);
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
