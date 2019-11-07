@@ -7,8 +7,8 @@ namespace FunctionApp3
     public class Formatting
     {
         // include 'dateFull.Substring(17, 2)' to specify seconds (use 11, 2 for hours and 14, 2 for mins) so that fileName is unique when running frequently for testing,
-        // above is true only after the 10th of Oct, Nov, Dec; indices vary as single digit days/months are formatted as 'n' not '0n' in Azure Function Apps
-        // formated as dd-mm-yyyy in Azure Function App, the DateTime struct returns differently formatted result in Visual Studio, Azure CLI and Azure Function Apps :@
+        // above is true only after the 10th of Oct, Nov, Dec; indices vary as single digit days/months are formatted as 'n' not '0n' in Azure Function Apps, ie 1/1/2020 not 01/01/2020
+        // formated as dd-mm-yyyy (or d/m/yyyy, d/mm/yyyy, dd/m/yyyy) in Azure Function App. The DateTime struct returns differently formatted result in Visual Studio, Azure CLI and Azure Function Apps :@
         public static string FormatDateTime()
         {
             string dateFull = DateTime.Now.ToString();

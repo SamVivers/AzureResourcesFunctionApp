@@ -38,7 +38,7 @@ namespace FunctionApp3
             // create and upload All Resources file
             string responseBody = await InOutput.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resources?api-version=2017-05-10", token);
             string body = Formatting.FormatResponse(responseBody);
-            await InOutput.OutputCloudAsync(blobClient, containerName, "AllResources" + dateFormatted + ".txt", body);
+            await InOutput.OutputCloudAsync(blobClient, containerName, dateFormatted + "/" + "AllResources.txt", body);
 
             // create and upload Resources files by resource group
             string responseBodyRG = await InOutput.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups?api-version=2014-04-01", token);
@@ -47,7 +47,7 @@ namespace FunctionApp3
             {
                 string responseBodyRGResources = await InOutput.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups/" + resourceGroup + "/resources?api-version=2017-05-10", token);
                 string bodyRG = Formatting.FormatResponse(responseBodyRGResources);
-                await InOutput.OutputCloudAsync(blobClient, containerName, "ResourceGroups/" + resourceGroup + "/" + resourceGroup + "Resources" + dateFormatted + ".txt", bodyRG);
+                await InOutput.OutputCloudAsync(blobClient, containerName, dateFormatted + "/" + resourceGroup + ".txt", bodyRG);
             }
         }    
     }
