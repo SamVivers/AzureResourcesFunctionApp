@@ -34,16 +34,6 @@ namespace FunctionApp3
             return await response.Content.ReadAsStringAsync();
         }
 
-        // Output locally, for testing
-        public static void OutputLocal(string body, string dateFormatted)
-        {
-            string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, $"Resources{dateFormatted}.txt")))
-            {
-                outputFile.Write(body);
-            }
-        }
-
         // In Azure Stroage create container and upload file, include / in fileName to create folders
         public static async Task OutputCloudAsync(CloudBlobClient blobClient, string containerName, string fileName, string body)
         {
@@ -53,6 +43,32 @@ namespace FunctionApp3
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(body)))
             {
                 await blockBlob.UploadFromStreamAsync(stream);
+            }
+        }
+
+        // Output locally, for testing
+        public static void OutputLocal(string body, string dateFormatted)
+        {
+            string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, $"Resources{dateFormatted}.csv")))
+            {
+                outputFile.Write(body);
+            }
+        }
+        public static void OutputLocal(string body, string dateFormatted, string resourceGroup)
+        {
+            string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, $"Resources{dateFormatted}{resourceGroup}.csv")))
+            {
+                outputFile.Write(body);
+            }
+        }
+        public static void OutputLocalText(string body, string dateFormatted)
+        {
+            string docPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, $"Resources{dateFormatted}.txt")))
+            {
+                outputFile.Write(body);
             }
         }
     }

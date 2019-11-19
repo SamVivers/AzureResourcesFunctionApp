@@ -33,29 +33,103 @@ namespace FunctionApp3
         }
 
         // request response (json parsed to string) is formated one line per resource
-        public static string FormatResponse(string responseBody)
+        public static string FormatResponse(string responseBody, string subId)
         {
-            string body = "";
+            string body = "Subscription ID\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
             int start = 0;
+            int count = 0;
+            for (int i = 15; i < responseBody.Length - 1; i++)
+            {
+                try
+                {
+                    if (responseBody.Substring(i - 15, 15) == "resourceGroups/")
+                    {
+                        start = i;
+                    }
+                    if (responseBody.Substring(i - 10, 10) == "/providers")
+                    {
+                        int end = i - 10;
+                        body += responseBody.Substring(start, end - start) + ",";
+                    }
+                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "}" && count < 3)
+                    {
+                        if (count == 0)
+                        {
+                            start = i + 9;
+                            count++;
+                        }
+                        else if (count == 1)
+                        {
+                            body += responseBody.Substring(start, i - start - 1) + ",";
+                            start = i + 9;
+                            count++;
+                        }
+                        else if (count == 2)
+                        {
+                            body += responseBody.Substring(start, i - start - 1) + ",";
+                            start = i + 1;
+                            count++;
+                        }
+                    }
+                    if (responseBody.Substring(i, 2) == ",{")
+                    {
+                        body += responseBody.Substring(start, i - start - 1) + "\n";
+                        start = i + 8;
+                        count = 0;
+                    }
+                    if (responseBody.Substring(i, 1) == "]")
+                    {
+                        body += responseBody.Substring(start, i - start - 2) + "\n";
+                    }
+                }
+                catch (ArgumentOutOfRangeException outOfRange)
+                {
+
+                    Console.WriteLine("Error: {0} format", outOfRange.Message);
+                }
+            }
+            return body;
+        }
+
+        // Overload of above, for resources by resource group
+        public static string FormatResponse(string responseBody, string resourceGroup, string subId)
+        {
+            string body = "Subscription ID,Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,Other(s)\n";
+            int start = 0;
+            int count = 0;
             for (int i = 0; i < responseBody.Length - 1; i++)
             {
                 try
                 {
-
-                    if (responseBody.Substring(i, 1) == "[")
+                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "}" && count < 3)
                     {
-                        body += "[\n";
-                        start = i + 1;
+                        if (count == 0)
+                        {
+                            start = i + 9;
+                            count++;
+                        }
+                        else if (count == 1)
+                        {
+                            body += responseBody.Substring(start, i - start - 1) + ",";
+                            start = i + 9;
+                            count++;
+                        }
+                        else if (count == 2)
+                        {
+                            body += responseBody.Substring(start, i - start - 1) + ",";
+                            start = i + 1;
+                            count++;
+                        }
                     }
                     if (responseBody.Substring(i, 2) == ",{")
                     {
-                        body += responseBody.Substring(start, i - start) + "\n";
-                        start = i + 1;
+                        body += responseBody.Substring(start, i - start - 1) + "\n";
+                        start = i + 8;
+                        count = 0;
                     }
                     if (responseBody.Substring(i, 1) == "]")
                     {
-                        body += responseBody.Substring(start, i - start) + "\n";
-                        body += "]";
+                        body += responseBody.Substring(start, i - start - 2);
                     }
                 }
                 catch (ArgumentOutOfRangeException outOfRange)
