@@ -22,6 +22,7 @@ namespace FunctionApp3
             string subId = Environment.GetEnvironmentVariable("subIdSV");
             string storageName = Environment.GetEnvironmentVariable("storageName");
             string storageKey = Environment.GetEnvironmentVariable("storageKey");
+            // must be lowercase
             string containerName = "resources-sv";
 
             // reformat DateTime.Now, as / and : not usable in filenames

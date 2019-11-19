@@ -79,7 +79,7 @@ namespace FunctionApp3
                     }
                     if (responseBody.Substring(i, 1) == "]")
                     {
-                        body += responseBody.Substring(start, i - start - 2) + "\n";
+                        body += responseBody.Substring(start, i - start - 1);
                     }
                 }
                 catch (ArgumentOutOfRangeException outOfRange)
@@ -129,7 +129,7 @@ namespace FunctionApp3
                     }
                     if (responseBody.Substring(i, 1) == "]")
                     {
-                        body += responseBody.Substring(start, i - start - 2);
+                        body += responseBody.Substring(start, i - start - 1);
                     }
                 }
                 catch (ArgumentOutOfRangeException outOfRange)
