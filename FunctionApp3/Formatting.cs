@@ -7,7 +7,7 @@ namespace FunctionApp3
     public class Formatting
     {
         // include 'dateFull.Substring(17, 2)' to specify seconds (use 11, 2 for hours and 14, 2 for mins) so that fileName is unique when running frequently for testing,
-        // above is true only after the 10th of Oct, Nov, Dec; indices vary as single digit days/months are formatted as 'n' not '0n' in Azure Function Apps, ie 1/1/2020 not 01/01/2020
+        // above is true only after the 10th of Oct, Nov, Dec; indices vary as single digit days/months are formatted as 'm/d/yyyy' not '0m/0d/yyyy' in Azure Function Apps, ie 1/1/2020 not 01/01/2020
         // formated as dd-mm-yyyy in Azure Function App. The DateTime struct returns differently formatted result in Visual Studio, Azure CLI and Azure Function Apps :@
         public static string FormatDateTime()
         {
@@ -17,22 +17,22 @@ namespace FunctionApp3
             {
                 dateFormatted = "0" + dateFull.Substring(2, 1) + "-" + "0" + dateFull.Substring(0, 1) + "-" + dateFull.Substring(4, 4);
             }
-            if (dateFull.Substring(1, 1) == "/" && dateFull.Substring(4, 1) == "/")
+            else if (dateFull.Substring(1, 1) == "/" && dateFull.Substring(4, 1) == "/")
             {
                 dateFormatted = dateFull.Substring(2, 2) + "-" + "0" + dateFull.Substring(0, 1) + "-" + dateFull.Substring(5, 4);
             }
-            if (dateFull.Substring(2, 1) == "/" && dateFull.Substring(4, 1) == "/")
+            else if (dateFull.Substring(2, 1) == "/" && dateFull.Substring(4, 1) == "/")
             {
                 dateFormatted = "0" + dateFull.Substring(3, 1) + "-" + dateFull.Substring(0, 2) + "-" + dateFull.Substring(5, 4);
             }
-            if (dateFull.Substring(2, 1) == "/" && dateFull.Substring(5, 1) == "/")
+            else if (dateFull.Substring(2, 1) == "/" && dateFull.Substring(5, 1) == "/")
             {
                 dateFormatted = dateFull.Substring(3, 2) + "-" + dateFull.Substring(0, 2) + "-" + dateFull.Substring(6, 4);
             }
             return dateFormatted;
         }
 
-        // request response (json parsed to string) is formated one line per resource
+        // request response (json parsed to string) is formated one line per resource, will be writen to a .csv file so ',' added as delimiter
         public static string FormatResponse(string responseBody, string subId)
         {
             string body = "Subscription ID\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
@@ -42,6 +42,7 @@ namespace FunctionApp3
             {
                 try
                 {
+                    // cut the resourceGroupName out of the Id and add it to body
                     if (responseBody.Substring(i - 15, 15) == "resourceGroups/")
                     {
                         start = i;
@@ -51,19 +52,22 @@ namespace FunctionApp3
                         int end = i - 10;
                         body += responseBody.Substring(start, end - start) + ",";
                     }
-                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "}" && count < 3)
+                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "{" && count < 3)
                     {
+                        // skip Id as already have resourceGroupName
                         if (count == 0)
                         {
                             start = i + 9;
                             count++;
                         }
+                        // add resourceName to body 
                         else if (count == 1)
                         {
                             body += responseBody.Substring(start, i - start - 1) + ",";
                             start = i + 9;
                             count++;
                         }
+                        // add resourceType to body
                         else if (count == 2)
                         {
                             body += responseBody.Substring(start, i - start - 1) + ",";
@@ -71,12 +75,14 @@ namespace FunctionApp3
                             count++;
                         }
                     }
+                    // upon reaching the end of a resource add all other info (unorganised) and start a new line
                     if (responseBody.Substring(i, 2) == ",{")
                     {
                         body += responseBody.Substring(start, i - start - 1) + "\n";
                         start = i + 8;
                         count = 0;
                     }
+                    // upon reaching the end of all resources add all other info (unorganised) for the last resource
                     if (responseBody.Substring(i, 1) == "]")
                     {
                         body += responseBody.Substring(start, i - start - 1);
@@ -103,17 +109,20 @@ namespace FunctionApp3
                 {
                     if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "}" && count < 3)
                     {
+                        // skip Id as already no need for resourceGroupName
                         if (count == 0)
                         {
                             start = i + 9;
                             count++;
                         }
+                        // add resourceName to body 
                         else if (count == 1)
                         {
                             body += responseBody.Substring(start, i - start - 1) + ",";
                             start = i + 9;
                             count++;
                         }
+                        // add resourceType to body
                         else if (count == 2)
                         {
                             body += responseBody.Substring(start, i - start - 1) + ",";
@@ -121,12 +130,14 @@ namespace FunctionApp3
                             count++;
                         }
                     }
+                    // upon reaching the end of a resource add all other info (unorganised) and start a new line
                     if (responseBody.Substring(i, 2) == ",{")
                     {
                         body += responseBody.Substring(start, i - start - 1) + "\n";
                         start = i + 8;
                         count = 0;
                     }
+                    // upon reaching the end of all resources add all other info (unorganised) for the last resource to body
                     if (responseBody.Substring(i, 1) == "]")
                     {
                         body += responseBody.Substring(start, i - start - 1);
