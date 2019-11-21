@@ -37,20 +37,25 @@ namespace FunctionApp3
         {
             string body = "Subscription ID\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
             int start = 0;
+            bool rg = true;
             int count = 0;
             for (int i = 15; i < responseBody.Length - 1; i++)
             {
                 try
                 {
-                    // cut the resourceGroupName out of the Id and add it to body
-                    if (responseBody.Substring(i - 15, 15) == "resourceGroups/")
+                    // cut the resourceGroupName out of the Id and add it to body && only do it once per resource (disks have a ManagedBy field which contains "resourceGroups/" and "/providers")
+                    if (rg)
                     {
-                        start = i;
-                    }
-                    if (responseBody.Substring(i - 10, 10) == "/providers")
-                    {
-                        int end = i - 10;
-                        body += responseBody.Substring(start, end - start) + ",";
+                        if (responseBody.Substring(i - 15, 15) == "resourceGroups/")
+                        {
+                            start = i;
+                        }
+                        if (responseBody.Substring(i - 10, 10) == "/providers")
+                        {
+                            int end = i - 10;
+                            body += responseBody.Substring(start, end - start) + ",";
+                            rg = false;
+                        }
                     }
                     if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "{" && count < 3)
                     {
@@ -81,6 +86,7 @@ namespace FunctionApp3
                         body += responseBody.Substring(start, i - start - 1) + "\n";
                         start = i + 8;
                         count = 0;
+                        rg = true;
                     }
                     // upon reaching the end of all resources add all other info (unorganised) for the last resource
                     if (responseBody.Substring(i, 1) == "]")
@@ -107,9 +113,9 @@ namespace FunctionApp3
             {
                 try
                 {
-                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "}" && count < 3)
+                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "{" && count < 3)
                     {
-                        // skip Id as already no need for resourceGroupName
+                        // skip Id as no need for resourceGroupName
                         if (count == 0)
                         {
                             start = i + 9;
