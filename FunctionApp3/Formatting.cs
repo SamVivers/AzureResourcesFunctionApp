@@ -38,14 +38,21 @@ namespace FunctionApp3
             string body = "Subscription ID";
             int start = 0;
             int count = 0;
+            if (resourceGroup == "All")
+            {
+                body += "\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
+            }
+            else
+            {
+                body += ",Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,Other(s)\n";
+            }
             for (int i = 15; i < responseBody.Length - 1; i++)
             {
                 try
                 {
                     // cut the resourceGroupName out of the Id and add it to body && only do it once per resource (disks have a ManagedBy field which contains "resourceGroups/" and "/providers")
                     if (resourceGroup == "All")
-                    {
-                        body += "\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
+                    {                        
                         if (responseBody.Substring(i - 15, 15) == "resourceGroups/")
                         {
                             start = i;
@@ -57,13 +64,10 @@ namespace FunctionApp3
                             resourceGroup = "Done";
                         }
                     }
-                    else
-                    {
-                        body += ",Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,Other(s)\n";
-                    }
+                    // use commas in responseBody to pick out Name and Type fields
                     if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "{" && count < 3)
                     {
-                        // skip Id as already have resourceGroupName
+                        // skip Id as already have resourceGroupName (if needed)
                         if (count == 0)
                         {
                             start = i + 9;
