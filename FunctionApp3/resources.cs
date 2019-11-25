@@ -47,7 +47,7 @@ namespace FunctionApp3
             foreach (string resourceGroup in resourceGroupsList)
             {
                 string responseBodyRGResources = await InOutput.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups/" + resourceGroup + "/resources?api-version=2017-05-10", token);
-                string bodyRG = Formatting.FormatResponse(responseBodyRGResources, resourceGroup, subId);
+                string bodyRG = Formatting.FormatResponse(responseBodyRGResources, subId, resourceGroup);
                 await InOutput.OutputCloudAsync(blobClient, containerName, dateFormatted + "/" + resourceGroup + ".csv", bodyRG);
             }
         }

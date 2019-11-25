@@ -33,19 +33,19 @@ namespace FunctionApp3
         }
 
         // request response (json parsed to string) is formated one line per resource, will be writen to a .csv file so ',' added as delimiter
-        public static string FormatResponse(string responseBody, string subId)
+        public static string FormatResponse(string responseBody, string subId, string resourceGroup = "All")
         {
-            string body = "Subscription ID\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
+            string body = "Subscription ID";
             int start = 0;
-            bool rg = true;
             int count = 0;
             for (int i = 15; i < responseBody.Length - 1; i++)
             {
                 try
                 {
                     // cut the resourceGroupName out of the Id and add it to body && only do it once per resource (disks have a ManagedBy field which contains "resourceGroups/" and "/providers")
-                    if (rg)
+                    if (resourceGroup == "All")
                     {
+                        body += "\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
                         if (responseBody.Substring(i - 15, 15) == "resourceGroups/")
                         {
                             start = i;
@@ -54,8 +54,12 @@ namespace FunctionApp3
                         {
                             int end = i - 10;
                             body += responseBody.Substring(start, end - start) + ",";
-                            rg = false;
+                            resourceGroup = "Done";
                         }
+                    }
+                    else
+                    {
+                        body += ",Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,Other(s)\n";
                     }
                     if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "{" && count < 3)
                     {
@@ -86,64 +90,12 @@ namespace FunctionApp3
                         body += responseBody.Substring(start, i - start - 1) + "\n";
                         start = i + 8;
                         count = 0;
-                        rg = true;
+                        if (resourceGroup == "Done")
+                        {
+                            resourceGroup = "All";
+                        }
                     }
                     // upon reaching the end of all resources add all other info (unorganised) for the last resource
-                    if (responseBody.Substring(i, 1) == "]")
-                    {
-                        body += responseBody.Substring(start, i - start - 1);
-                    }
-                }
-                catch (ArgumentOutOfRangeException outOfRange)
-                {
-
-                    Console.WriteLine("Error: {0} format", outOfRange.Message);
-                }
-            }
-            return body;
-        }
-
-        // Overload of above, for resources by resource group
-        public static string FormatResponse(string responseBody, string resourceGroup, string subId)
-        {
-            string body = "Subscription ID,Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,Other(s)\n";
-            int start = 0;
-            int count = 0;
-            for (int i = 0; i < responseBody.Length - 1; i++)
-            {
-                try
-                {
-                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "{" && count < 3)
-                    {
-                        // skip Id as no need for resourceGroupName
-                        if (count == 0)
-                        {
-                            start = i + 9;
-                            count++;
-                        }
-                        // add resourceName to body 
-                        else if (count == 1)
-                        {
-                            body += responseBody.Substring(start, i - start - 1) + ",";
-                            start = i + 9;
-                            count++;
-                        }
-                        // add resourceType to body
-                        else if (count == 2)
-                        {
-                            body += responseBody.Substring(start, i - start - 1) + ",";
-                            start = i + 1;
-                            count++;
-                        }
-                    }
-                    // upon reaching the end of a resource add all other info (unorganised) and start a new line
-                    if (responseBody.Substring(i, 2) == ",{")
-                    {
-                        body += responseBody.Substring(start, i - start - 1) + "\n";
-                        start = i + 8;
-                        count = 0;
-                    }
-                    // upon reaching the end of all resources add all other info (unorganised) for the last resource to body
                     if (responseBody.Substring(i, 1) == "]")
                     {
                         body += responseBody.Substring(start, i - start - 1);
