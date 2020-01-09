@@ -10,7 +10,7 @@ namespace FunctionApp3
 {
     public static class Resources
     {
-        [FunctionName("Resources")]
+        [FunctionName("AzureResources")]
         public static async Task RunAsync([TimerTrigger("0 0 4 * * *")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
