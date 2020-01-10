@@ -1,0 +1,12 @@
+$role = [Microsoft.Azure.Commands.Resources.Models.Authorization.PSRoleDefinition]::new()
+$role.Name = 'ResourceApp'
+$role.Description = 'Read all resources, write blob to stroage account'
+$role.IsCustom = $true
+$perms = 'Microsoft.Resources/*/read','Microsoft.Resources/subscriptions/*/read'
+$perms += ,'Microsoft.Resources/subscriptions/resourcegroups/resources/read'
+$perms += ,'Microsoft.Storage/storageAccounts/blobServices/containers/write'
+$role.Actions = $perms
+$role.DataActions = 'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write'
+$subs = '/subscriptions/<YOUR_SUB_ID>'
+$role.AssignableScopes = $subs
+New-AzRoleDefinition -Role $role
