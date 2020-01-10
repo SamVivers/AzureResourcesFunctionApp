@@ -135,7 +135,7 @@ namespace FunctionApp3
                                 count++;
                             }
                         }
-                    }
+                    } 
                     if (responseBody.Substring(i - 11, 11) == "\"identity\":")
                     {
                         body += responseBody.Substring(start, i - 13 - start) + ",";
@@ -153,6 +153,10 @@ namespace FunctionApp3
                     if (responseBody.Substring(i - 7, 7) == "\"tags\":")
                     {
                         body += responseBody.Substring(start, i - 9 - start) + ",";
+                        if (count == 6)
+                        {
+                            body += " ";                           
+                        }
                         start = i + 1;
                         count++;
                         if (count < 7)
@@ -207,9 +211,9 @@ namespace FunctionApp3
                         }
                         quotes = 0;
                     }
-                    if (body.Substring(i - 1, 1) == "}")
+                    if (body.Substring(i, 1) == "}")
                     {
-                        body += responseBody.Substring(start, i - 1 - start);
+                        bodyEdit += body.Substring(start, i - 1 - start);
                     }
                 }
                 catch (ArgumentOutOfRangeException outOfRange)

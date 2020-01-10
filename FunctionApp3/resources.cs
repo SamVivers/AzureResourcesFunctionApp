@@ -39,7 +39,6 @@ namespace FunctionApp3
             // create and upload All Resources file
             string responseBody = await InOutput.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resources?api-version=2017-05-10", token);
             string body = Formatting.FormatResponse(responseBody, subId);
-            log.LogInformation(body);
             await InOutput.OutputCloudAsync(blobClient, containerName, dateFormatted + "/AllResources.csv", body);
 
             // create and upload Resources files by resource group
