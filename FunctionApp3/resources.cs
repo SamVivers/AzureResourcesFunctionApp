@@ -38,9 +38,52 @@ namespace FunctionApp3
 
             // create and upload All Resources file
             string responseBody = await InOutput.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resources?api-version=2017-05-10", token);
-            string body = Formatting.FormatResponse(responseBody, subId);
-            await InOutput.OutputCloudAsync(blobClient, containerName, dateFormatted + "/AllResources.csv", body);
+            List<string> ids = Formatting.FormatResponse(responseBody);
+            string vmName = "error";
+            string vmResourceGroup = "error";
+            int start = 0;
+            foreach (string id in ids)
+            {
+                for (int i = 17; i < id.Length; i++)
+                {
+                    try
+                    {
+                        if (id.Substring(i - 16, 16) == "/resourceGroups/")
+                        {
+                            start = i;
+                        }
+                        if (id.Substring(i - 11, 11) == "/providers/")
+                        {
+                            vmResourceGroup = id.Substring(start, i - start - 11);
+                        }
+                        if (id.Substring(i - 17, 17) == "/virtualMachines/")
+                        {
+                            vmName = id.Substring(i);
+                        }
+                    }
+                    catch (ArgumentOutOfRangeException outOfRange)
+                    {
+                        Console.WriteLine("Error: {0} format", outOfRange.Message);
+                    }
+                }
 
+                string body = "{\n" +
+                    "\"$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\"," +
+                    "\n\"contentVersion\": \"1.0.0.0\"," +
+                    "\n\"parameters\": {" +
+                    "\n\"virtualMachineName\": {" +
+                    "\n\"value\": \"" + vmName + "\"}," +
+                    "\n\"virtualMachineResourceGroup\": {" +
+                    "\n\"value\": \"" + vmResourceGroup + "\"}," +
+                    "\n\"subId\": {" +
+                    "\n\"value\": \"" + subId + "\"" +
+                    "\n}" +
+                    "\n}" +
+                    "\n}";
+                await InOutput.OutputCloudAsync(blobClient, "dashboard-params", vmName + ".json", body);
+            }
+
+            /*
             // create and upload Resources files by resource group
             string responseBodyRG = await InOutput.GetInfoAsync("https://management.azure.com/subscriptions/" + subId + "/resourceGroups?api-version=2014-04-01", token);
             List<string> resourceGroupsList = Formatting.ListResourceGroups(responseBodyRG, log);
@@ -50,6 +93,7 @@ namespace FunctionApp3
                 string bodyRG = Formatting.FormatResponse(responseBodyRGResources, subId, resourceGroup);
                 await InOutput.OutputCloudAsync(blobClient, containerName, dateFormatted + "/" + resourceGroup + ".csv", bodyRG);
             }
+            */
         }
     }
 }
