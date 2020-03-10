@@ -45,13 +45,13 @@ namespace FunctionApp3
             int bracket = 1;
             if (resourceGroup == "All")
             {
-                body += "\n" + subId + "\n\nResource Group,Name,Type,Other(s)\n";
+                body += "\n" + subId + "\n\nResource Group,Name,Type,SKU,ManagedBy,Kind,Location,Identity,Tags\n";
             }
             else
             {
-                body += ",Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,Other(s)\n";
+                body += ",Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,SKU,ManagedBy,Kind,Location,Identity,Tags\n";
             }
-            for (int i = 15; i < responseBody.Length - 1; i++)
+            for (int i = 15; i < responseBody.Length; i++)
             {
                 try
                 {
@@ -64,37 +64,11 @@ namespace FunctionApp3
                         }
                         if (responseBody.Substring(i - 10, 10) == "/providers")
                         {
-                            int end = i - 10;
-                            body += responseBody.Substring(start, end - start) + ",";
+                            body += responseBody.Substring(start, i - 10 - start) + ",";
                             resourceGroup = "Done";
                         }
                     }
-                    // use commas in responseBody to pick out Name and Type fields
-                    if (responseBody.Substring(i, 1) == "," && responseBody.Substring(i + 1, 1) != "{" && count < 3)
-                    {
-                        // skip Id as already have resourceGroupName (if needed)
-                        if (count == 0)
-                        {
-                            start = i + 9;
-                            count++;
-                        }
-                        // add resourceName to body 
-                        else if (count == 1)
-                        {
-                            body += responseBody.Substring(start, i - start - 1) + ",";
-                            start = i + 9;
-                            count++;
-                        }
-                        // add resourceType to body
-                        else if (count == 2)
-                        {
-                            body += responseBody.Substring(start, i - start - 1) + ",";
-                            start = i + 1;
-                            count++;
-                        }
-                    }
-                    // upon reaching the end of a resource add all other info (unorganised) and start a new line
-                    // body will be written as a CSV file, however some fields (ie SKU) have commas within sqaure brackets seperating their key:value pairs, these are replaced by a space
+
                     if (responseBody.Substring(i, 1) == "{")
                     {
                         bracket++;
@@ -103,35 +77,153 @@ namespace FunctionApp3
                     {
                         bracket--;
                     }
-                    if (bracket >= 2 && responseBody.Substring(i, 1) == ",")
+
+                    if (responseBody.Substring(i - 7, 7) == "\"name\":" && bracket < 2)
                     {
-                        body += responseBody.Substring(start, i - start) + " ";
                         start = i + 1;
                     }
-                    if (responseBody.Substring(i, 2) == ",{")
+                    if (responseBody.Substring(i - 7, 7) == "\"type\":" && bracket < 2)
                     {
-                        body += responseBody.Substring(start, i - start - 1) + "\n";
-                        start = i + 8;
+                        body += responseBody.Substring(start, i - 9 - start) + ",";
+                        start = i + 1;
+                        count++;
+                    }
+                    if (responseBody.Substring(i - 6, 6) == "\"sku\":")
+                    {
+                        body += responseBody.Substring(start, i - 8 - start) + ",";
+                        start = i + 1;
+                        count++;
+                    }
+                    if (responseBody.Substring(i - 12, 12) == "\"managedBy\":")
+                    {
+                        body += responseBody.Substring(start, i - 14 - start) + ",";
+                        start = i + 1;
+                        count++;
+                        if (count < 3)
+                        {
+                            while (count < 3)
+                            {
+                                body += ",";
+                                count++;
+                            }
+                        }
+                    }
+                    if (responseBody.Substring(i - 7, 7) == "\"kind\":")
+                    {
+                        body += responseBody.Substring(start, i - 9 - start) + ",";
+                        start = i + 1;
+                        count++;
+                        if (count < 4)
+                        {
+                            while (count < 4)
+                            {
+                                body += ",";
+                                count++;
+                            }
+                        }
+                    }
+                    if (responseBody.Substring(i - 11, 11) == "\"location\":")
+                    {
+                        body += responseBody.Substring(start, i - 13 - start) + ",";
+                        start = i + 1;
+                        count++;
+                        if (count < 5)
+                        {
+                            while (count < 5)
+                            {
+                                body += ",";
+                                count++;
+                            }
+                        }
+                    } 
+                    if (responseBody.Substring(i - 11, 11) == "\"identity\":")
+                    {
+                        body += responseBody.Substring(start, i - 13 - start) + ",";
+                        start = i + 1;
+                        count++;
+                        if (count < 6)
+                        {
+                            while (count < 6)
+                            {
+                                body += ",";
+                                count++;
+                            }
+                        }
+                    }
+                    if (responseBody.Substring(i - 7, 7) == "\"tags\":")
+                    {
+                        body += responseBody.Substring(start, i - 9 - start) + ",";
+                        if (count == 6)
+                        {
+                            body += " ";                           
+                        }
+                        start = i + 1;
+                        count++;
+                        if (count < 7)
+                        {
+                            while (count < 7)
+                            {
+                                body += ",";
+                                count++;
+                            }
+                        }
+                    }
+                    // upon reaching the end of a resource add all tag info and start a new line
+                    if (responseBody.Substring(i - 2, 2) == ",{")
+                    {
+                        body += responseBody.Substring(start, i - 4 - start) + "\n";
                         count = 0;
                         if (resourceGroup == "Done")
                         {
                             resourceGroup = "All";
                         }
                     }
-                    // upon reaching the end of all resources add all other info (unorganised) for the last resource
-                    if (responseBody.Substring(i, 1) == "]")
+                    // upon reaching the end of all resources add tag info for the last resource
+                    if (responseBody.Substring(i - 1, 1) == "]")
                     {
-                        body += responseBody.Substring(start, i - start - 1);
+                        body += responseBody.Substring(start, i - 2 - start);
                     }
                 }
                 catch (ArgumentOutOfRangeException outOfRange)
                 {
-
                     Console.WriteLine("Error: {0} format", outOfRange.Message);
                 }
             }
-            return body;
+            // body will be written as a CSV file, however some fields (ie SKU) have commas seperating their "key":"value" pairs, these are replaced by a space
+            string bodyEdit = "";
+            int quotes = 0;
+            start = 0;
+            for (int i = 2; i < body.Length; i++)
+            {
+                try
+                {
+                    if (body.Substring(i - 2, 1) == "\"")
+                    {
+                        quotes++;
+                    }
+
+                    if (quotes == 4)
+                    {
+                        if (body.Substring(i - 1, 2) == ",\"")
+                        {
+                            bodyEdit += body.Substring(start, i - 1 - start) + " ";
+                            start = i;
+                        }
+                        quotes = 0;
+                    }
+                    if (body.Substring(i, 1) == "}")
+                    {
+                        bodyEdit += body.Substring(start, i - 1 - start);
+                    }
+                }
+                catch (ArgumentOutOfRangeException outOfRange)
+                {
+                    Console.WriteLine("Error: {0} format", outOfRange.Message);
+                }
+            }
+            return bodyEdit;
         }
+        
         // create a List containing name of each resource group in the target subscription
         public static List<string> ListResourceGroups(string responseBodyRG, ILogger log)
         {
