@@ -13,10 +13,10 @@ namespace FunctionApp3
     public static class Resources
     {
         [FunctionName("AzureResources")]
-        //public static async Task RunAsync([TimerTrigger("0 0 4 * * 6")]TimerInfo myTimer, ILogger log)
-        public static async Task RunAsync(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+        public static async Task RunAsync([TimerTrigger("0 0 4 * * 6")]TimerInfo myTimer, ILogger log)
+        //public static async Task RunAsync(
+        //    [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        //    ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 

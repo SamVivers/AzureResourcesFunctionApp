@@ -45,11 +45,11 @@ namespace FunctionApp3
             int bracket = 1;
             if (resourceGroup == "All")
             {
-                body += "\n" + subId + "\n\nResource Group,Name,Type,SKU,ManagedBy,Kind,Location,Identity,Tags\n";
+                body += "\n" + subId + "\n\nResource Group,Name,Type,SKU,ManagedBy,Kind,Location,Identity,Plan,Tags\n\n";
             }
             else
             {
-                body += ",Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,SKU,ManagedBy,Kind,Location,Identity,Tags\n";
+                body += ",Reasource Group\n" + subId + "," + resourceGroup + "\n\nName,Type,SKU,ManagedBy,Kind,Location,Identity,Plan,Tags\n\n";
             }
             for (int i = 15; i < responseBody.Length; i++)
             {
@@ -68,7 +68,7 @@ namespace FunctionApp3
                             resourceGroup = "Done";
                         }
                     }
-
+                    // some string we want to pick out as titles occur as keys within nested object, by counting brackets we can identify these 
                     if (responseBody.Substring(i, 1) == "{")
                     {
                         bracket++;
@@ -77,7 +77,7 @@ namespace FunctionApp3
                     {
                         bracket--;
                     }
-
+                    // scan through the JSON for specific keys (translated to column headers) and fill out the column with info
                     if (responseBody.Substring(i - 7, 7) == "\"name\":" && bracket < 2)
                     {
                         start = i + 1;
@@ -150,18 +150,28 @@ namespace FunctionApp3
                             }
                         }
                     }
-                    if (responseBody.Substring(i - 7, 7) == "\"tags\":")
+                    if (responseBody.Substring(i - 7, 7) == "\"plan\":")
                     {
                         body += responseBody.Substring(start, i - 9 - start) + ",";
-                        if (count == 6)
-                        {
-                            body += " ";                           
-                        }
                         start = i + 1;
                         count++;
                         if (count < 7)
                         {
                             while (count < 7)
+                            {
+                                body += ",";
+                                count++;
+                            }
+                        }
+                    }
+                    if (responseBody.Substring(i - 7, 7) == "\"tags\":")
+                    {
+                        body += responseBody.Substring(start, i - 9 - start) + ",";
+                        start = i + 1;
+                        count++;
+                        if (count < 8)
+                        {
+                            while (count < 8)
                             {
                                 body += ",";
                                 count++;
@@ -189,7 +199,7 @@ namespace FunctionApp3
                     Console.WriteLine("Error: {0} format", outOfRange.Message);
                 }
             }
-            // body will be written as a CSV file, however some fields (ie SKU) have commas seperating their "key":"value" pairs, these are replaced by a space
+            // body will be written as a CSV file, however some fields (ie SKU) have commas seperating their "key":"value" pairs, we want these to be writen into the same column so commas are replaced by spaces
             string bodyEdit = "";
             int quotes = 0;
             start = 0;
