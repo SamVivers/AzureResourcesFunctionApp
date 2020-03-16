@@ -41,7 +41,7 @@ namespace FunctionApp3
         {
             string body = "Subscription ID";
             int start = 0;
-            int count = 0;
+            int column = 0;
             int bracket = 1;
             if (resourceGroup == "All")
             {
@@ -68,7 +68,7 @@ namespace FunctionApp3
                             resourceGroup = "Done";
                         }
                     }
-                    // some string we want to pick out as titles occur as keys within nested object, by counting brackets we can identify these 
+                    // some string we want to pick out as titles occur as keys within nested object, by counting brackets we can distinguish these 
                     if (responseBody.Substring(i, 1) == "{")
                     {
                         bracket++;
@@ -86,95 +86,22 @@ namespace FunctionApp3
                     {
                         body += responseBody.Substring(start, i - 9 - start) + ",";
                         start = i + 1;
-                        count++;
+                        column++;
                     }
-                    if (responseBody.Substring(i - 6, 6) == "\"sku\":")
+                    // both 'name and 'type' will exist for all resources but for 'sku' onwards we may need to leave blank columns
+                    string[] columnHeaders = {"\"sku\":", "\"managedBy\":", "\"kind\":", "\"location\":", "\"identity\":", "\"plan\":", "\"tags\":"};
+
+                    foreach (string columnHeader in columnHeaders)
                     {
-                        body += responseBody.Substring(start, i - 8 - start) + ",";
-                        start = i + 1;
-                        count++;
-                    }
-                    if (responseBody.Substring(i - 12, 12) == "\"managedBy\":")
-                    {
-                        body += responseBody.Substring(start, i - 14 - start) + ",";
-                        start = i + 1;
-                        count++;
-                        if (count < 3)
+                        if (responseBody.Substring(i - columnHeader.Length, columnHeader.Length) == columnHeader)
                         {
-                            while (count < 3)
+                            body += responseBody.Substring(start, i - columnHeader.Length - 2 - start) + ",";
+                            start = i + 1;
+                            column++;
+                            while (column < Array.IndexOf(columnHeaders, columnHeader) + 2)
                             {
                                 body += ",";
-                                count++;
-                            }
-                        }
-                    }
-                    if (responseBody.Substring(i - 7, 7) == "\"kind\":")
-                    {
-                        body += responseBody.Substring(start, i - 9 - start) + ",";
-                        start = i + 1;
-                        count++;
-                        if (count < 4)
-                        {
-                            while (count < 4)
-                            {
-                                body += ",";
-                                count++;
-                            }
-                        }
-                    }
-                    if (responseBody.Substring(i - 11, 11) == "\"location\":")
-                    {
-                        body += responseBody.Substring(start, i - 13 - start) + ",";
-                        start = i + 1;
-                        count++;
-                        if (count < 5)
-                        {
-                            while (count < 5)
-                            {
-                                body += ",";
-                                count++;
-                            }
-                        }
-                    } 
-                    if (responseBody.Substring(i - 11, 11) == "\"identity\":")
-                    {
-                        body += responseBody.Substring(start, i - 13 - start) + ",";
-                        start = i + 1;
-                        count++;
-                        if (count < 6)
-                        {
-                            while (count < 6)
-                            {
-                                body += ",";
-                                count++;
-                            }
-                        }
-                    }
-                    if (responseBody.Substring(i - 7, 7) == "\"plan\":")
-                    {
-                        body += responseBody.Substring(start, i - 9 - start) + ",";
-                        start = i + 1;
-                        count++;
-                        if (count < 7)
-                        {
-                            while (count < 7)
-                            {
-                                body += ",";
-                                count++;
-                            }
-                        }
-                    }
-                    if (responseBody.Substring(i - 7, 7) == "\"tags\":")
-                    {
-                        body += responseBody.Substring(start, i - 9 - start) + ",";
-                        start = i + 1;
-                        count++;
-                        if (count < 8)
-                        {
-                            while (count < 8)
-                            {
-                                body += ",";
-                                count++;
+                                column++;
                             }
                         }
                     }
@@ -182,7 +109,7 @@ namespace FunctionApp3
                     if (responseBody.Substring(i - 2, 2) == ",{")
                     {
                         body += responseBody.Substring(start, i - 4 - start) + "\n";
-                        count = 0;
+                        column = 0;
                         if (resourceGroup == "Done")
                         {
                             resourceGroup = "All";
@@ -191,7 +118,7 @@ namespace FunctionApp3
                     // upon reaching the end of all resources add tag info for the last resource
                     if (responseBody.Substring(i - 1, 1) == "]")
                     {
-                        body += responseBody.Substring(start, i - 2 - start);
+                        body += responseBody.Substring(start, i - 1 - start);
                     }
                 }
                 catch (ArgumentOutOfRangeException outOfRange)
